@@ -1,0 +1,105 @@
+body {
+
+    background: #111;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+}
+
+
+
+.container {
+
+    width: 600px;
+
+    margin: 50px auto;
+
+}
+
+
+
+h1 {
+
+    text-align: center;
+
+}
+
+
+
+.subtitle {
+
+    text-align: center;
+
+    color: #999;
+
+}
+
+
+
+.card {
+
+    background: #222;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    margin-top: 30px;
+
+}
+
+
+
+#commits {
+
+    max-height: 500px;
+
+    overflow-y: auto;
+
+}
+
+
+
+.commit {
+
+    background: #333;
+
+    padding: 15px;
+
+    margin-bottom: 12px;
+
+    border-radius: 8px;
+
+}
+
+
+
+.commit h3 {
+
+    margin: 0;
+
+    font-size: 18px;
+
+}
+
+
+
+.commit p {
+
+    color: #aaa;
+
+}
+
+
+
+footer {
+
+    text-align: center;
+
+    margin-top: 30px;
+
+    color: #777;
+
+}
