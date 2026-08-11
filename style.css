@@ -103,3 +103,39 @@ footer {
     color: #777;
 
 }
+
+.status {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    color: #bbb;
+    font-size: 0.95rem;
+}
+
+.status.status-error {
+    color: #ff9f9f;
+}
+
+.status .error-details {
+    display: block;
+    margin-top: 0.5rem;
+    color: #ffbaba;
+}
+
+.loading,
+.empty,
+.error,
+.error-details {
+    margin: 12px 0 0;
+    color: #ddd;
+}
+
+.error {
+    color: #ff7a7a;
+}
+
+.error-details {
+    color: #ffbaba;
+}
+
+    font-size: 0.95rem;
+}

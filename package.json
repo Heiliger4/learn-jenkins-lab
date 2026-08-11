@@ -1,0 +1,12 @@
+{
+  "name": "ongoing-commiter",
+  "version": "1.0.0",
+  "description": "Commit Monitor demo with Docker and Jenkins pipeline",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "author": "",
+  "license": "MIT"
+}
