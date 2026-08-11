@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const {
   buildCommit,
   appendCommit,
-} = require("../updater.js");
+} = require("../../updater.js");
 
 test("buildCommit() creates a message and matching timestamp", () => {
   const fixedDate = new Date("2026-08-11T10:30:00.000Z");

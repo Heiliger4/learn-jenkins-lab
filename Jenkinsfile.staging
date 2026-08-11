@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "ongoing-commiter"
+        IMAGE_TAG  = "staging-${env.BUILD_NUMBER}"
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                sh 'node --version'
+                sh 'npm install'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'npm run test:unit'
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                sh 'npm run test:integration'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploying image to staging environment'
+            }
+        }
+
+        stage('Smoke / E2E Tests') {
+            steps {
+                sh 'npm run test:e2e'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Staging pipeline completed.'
+        }
+        success {
+            echo "Staging build ${IMAGE_TAG} passed."
+        }
+        failure {
+            echo "Staging build ${IMAGE_TAG} failed."
+        }
+    }
+}

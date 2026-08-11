@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/usr/src/app
+    command: node server.js
+    environment:
+      - NODE_ENV=development
