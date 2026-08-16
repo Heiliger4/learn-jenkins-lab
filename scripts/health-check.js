@@ -1,5 +1,5 @@
 const http = require('http');
-const url = process.env.HEALTH_URL || 'http://localhost:8001/';
+const url = process.env.HEALTH_URL || 'http://localhost:8000/';
 
 const req = http.get(url, res => {
   const status = res.statusCode;
