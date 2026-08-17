@@ -32,6 +32,7 @@ pipeline {
                         sh 'npm run lint'
                     }
                 }
+
                 stage('Unit Tests') {
                     steps {
                         sh 'npm run test:unit'
@@ -126,11 +127,95 @@ pipeline {
     post {
         success {
             echo "Build ${IMAGE_TAG} passed successfully."
+
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=✅ Jenkins Build SUCCESS
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: SUCCESS
+
+Production deployment completed successfully.
+Jenkins: ${BUILD_URL}"
+                '''
+            }
         }
 
         failure {
             echo "Build ${IMAGE_TAG} failed. Initiating rollback flow..."
+
             sh 'echo "Rollback placeholder: implement rollback actions here."'
+
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=❌ Jenkins Build FAILED
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: FAILED
+
+The Jenkins pipeline failed.
+Check the Jenkins console for details.
+
+Jenkins: ${BUILD_URL}"
+                '''
+            }
+        }
+
+        aborted {
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=⚠️ Jenkins Build ABORTED
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: ABORTED
+
+The Jenkins pipeline was aborted.
+
+Jenkins: ${BUILD_URL}"
+                '''
+            }
         }
     }
 }

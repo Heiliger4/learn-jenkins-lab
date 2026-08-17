@@ -91,10 +91,94 @@ pipeline {
 
         success {
             echo "Staging build ${IMAGE_TAG} passed successfully."
+
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=🟢 Jenkins STAGING SUCCESS
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: SUCCESS
+
+Staging deployment and tests completed successfully.
+
+Jenkins: ${BUILD_URL}"
+                '''
+            }
         }
 
         failure {
             echo "Staging build ${IMAGE_TAG} failed."
+
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=🔴 Jenkins STAGING FAILED
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: FAILED
+
+The staging pipeline failed.
+Check Jenkins console output for details.
+
+Jenkins: ${BUILD_URL}"
+                '''
+            }
+        }
+
+        aborted {
+            withCredentials([
+                string(
+                    credentialsId: 'telegram-bot-token',
+                    variable: 'TELEGRAM_BOT_TOKEN'
+                ),
+                string(
+                    credentialsId: 'telegram-chat-id',
+                    variable: 'TELEGRAM_CHAT_ID'
+                )
+            ]) {
+                sh '''
+                    curl -s -X POST \
+                        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                        -d chat_id="${TELEGRAM_CHAT_ID}" \
+                        --data-urlencode "text=⚠️ Jenkins STAGING ABORTED
+
+Job: ${JOB_NAME}
+Build: #${BUILD_NUMBER}
+Image: ${IMAGE_NAME}:${IMAGE_TAG}
+Status: ABORTED
+
+The staging pipeline was aborted.
+
+Jenkins: ${BUILD_URL}"
+                '''
+            }
         }
     }
-}   
+}
