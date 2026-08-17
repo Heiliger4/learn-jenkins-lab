@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "ongoing-commiter"
+        IMAGE_NAME = "kpg44/ongoing-commiter"
         IMAGE_TAG  = "staging-${env.BUILD_NUMBER}"
     }
 
@@ -49,9 +49,31 @@ pipeline {
             }
         }
 
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            --username "$DOCKER_USERNAME" \
+                            --password-stdin
+
+                        docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying image to staging environment'
+                echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} to staging environment..."
             }
         }
 
@@ -66,11 +88,13 @@ pipeline {
         always {
             echo 'Staging pipeline completed.'
         }
+
         success {
-            echo "Staging build ${IMAGE_TAG} passed."
+            echo "Staging build ${IMAGE_TAG} passed successfully."
         }
+
         failure {
             echo "Staging build ${IMAGE_TAG} failed."
         }
     }
-}
+}   

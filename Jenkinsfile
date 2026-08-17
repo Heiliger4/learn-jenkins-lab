@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "ongoing-commiter"
+        IMAGE_NAME = "kpg44/ongoing-commiter"
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
     }
 
@@ -70,18 +70,31 @@ pipeline {
             }
         }
 
-        stage('Push to Registry') {
-            when {
-                expression { return false }
-            }
+        stage('Push to Docker Hub') {
             steps {
-                echo 'Push to registry not configured yet.'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            --username "$DOCKER_USERNAME" \
+                            --password-stdin
+
+                        docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+
+                        docker logout
+                    '''
+                }
             }
         }
 
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to staging environment...'
+                echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} to staging environment..."
             }
         }
 
@@ -99,7 +112,7 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production environment...'
+                echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} to production environment..."
             }
         }
 
@@ -112,8 +125,9 @@ pipeline {
 
     post {
         success {
-            echo "Build ${IMAGE_TAG} passed."
+            echo "Build ${IMAGE_TAG} passed successfully."
         }
+
         failure {
             echo "Build ${IMAGE_TAG} failed. Initiating rollback flow..."
             sh 'echo "Rollback placeholder: implement rollback actions here."'

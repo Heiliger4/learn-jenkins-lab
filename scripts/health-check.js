@@ -1,5 +1,5 @@
 const http = require('http');
-const url = process.env.HEALTH_URL || 'http://localhost:8000/';
+const url = process.env.HEALTH_URL || `http://127.0.0.1:3000/`;
 
 const req = http.get(url, res => {
   const status = res.statusCode;
@@ -16,3 +16,4 @@ req.on('error', err => {
   console.error(`Health check failed: ${err.message}`);
   process.exit(1);
 });
+

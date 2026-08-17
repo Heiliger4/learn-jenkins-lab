@@ -48,7 +48,7 @@ test('e2e: health check script returns success', async () => {
   server.stderr.on('data', () => {});
 
   try {
-    await waitForServer('http://127.0.0.1:8000/');
+    await waitForServer('http://127.0.0.1:3000/');
 
     const script = spawn('node', [path.join(projectRoot, 'scripts/health-check.js')], { cwd: projectRoot });
     let output = '';
